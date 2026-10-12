@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SIR Electoral Roll Management System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗳️</text></svg>">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="brand">
+                <span class="brand-badge">SIR</span>
+                <div>
+                    <span class="brand-title">Electoral Roll System</span>
+                    <span class="brand-subtitle">Special Intensive Revision Management</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">📊 Dashboard</a></li>
+                <li><a href="{{ url_for('search') }}">🔍 Voter Search</a></li>
+                <li><a href="{{ url_for('register') }}">📝 Register</a></li>
+                <li><a href="{{ url_for('review') }}">⚖️ Officer Review</a></li>
+                <li><a href="{{ url_for('booths') }}">🏫 Booth Limits</a></li>
+                <li><a href="{{ url_for('appeals') }}">📜 Appeals</a></li>
+                <li><a href="{{ url_for('rules_demo') }}">🧪 Rules Sandbox</a></li>
+            </ul>
+            <div class="driver-pill" title="Active Storage Engine">
+                <span style="font-size: 0.65rem;">●</span> Engine: {{ db_driver | upper }}
+            </div>
+        </div>
+    </header>
+
+    <main class="main-wrapper">
+        <div class="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <span>{% if category == 'success' %}✓{% elif category == 'danger' %}⚠{% else %}ℹ{% endif %}</span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>Special Intensive Revision (SIR) Electoral Roll Management System &bull; Database &amp; Full-Stack Application Project</p>
+        <p style="margin-top: 4px; font-size: 0.75rem; color: #64748b;">Compliant with RPA 1950 &bull; 18-Year Eligibility Check &bull; 1,200 Booth Limit &bull; 15-Day Appeal Validation</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

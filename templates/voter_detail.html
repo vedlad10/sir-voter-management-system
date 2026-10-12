@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}{{ voter.first_name }} {{ voter.last_name }} ({{ voter.epic_number }}) — SIR Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>👤 Voter Profile: {{ voter.first_name }} {{ voter.last_name }}</h1>
+        <p>EPIC Number: <strong>{{ voter.epic_number }}</strong> &bull; Registration Status: 
+            {% if voter.status == 'Approved' %}
+                <span class="badge badge-approved">Approved</span>
+            {% elif voter.status == 'Verified' %}
+                <span class="badge badge-verified">Verified</span>
+            {% elif voter.status == 'Pending_Verification' %}
+                <span class="badge badge-pending">Pending Verif</span>
+            {% elif voter.status == 'Submitted' %}
+                <span class="badge badge-submitted">Submitted</span>
+            {% elif voter.status == 'Rejected' %}
+                <span class="badge badge-rejected">Rejected</span>
+            {% elif voter.status == 'Under_Appeal' %}
+                <span class="badge badge-appeal">Under Appeal</span>
+            {% else %}
+                <span class="badge badge-deleted">{{ voter.status }}</span>
+            {% endif %}
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        {% if voter.status in ['Rejected', 'Deleted'] %}
+            <a href="{{ url_for('appeals') }}" class="btn btn-warning">File Statutory Appeal</a>
+        {% endif %}
+        <a href="{{ url_for('search') }}" class="btn btn-secondary">&larr; Back to Search</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Personal & Electoral Details Card -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>🪪 Identity &amp; Eligibility Attributes</h3>
+        </div>
+        <div class="card-body">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 40%; font-weight: 600; color: var(--text-secondary);">EPIC Number:</td>
+                    <td><strong style="color: var(--primary);">{{ voter.epic_number }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Full Name:</td>
+                    <td>{{ voter.first_name }} {{ voter.last_name }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Date of Birth:</td>
+                    <td>{{ voter.dob }} (<strong>{{ age_at_qualifying }} years</strong> on Qualifying Date {{ voter.qualifying_date }})</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Gender:</td>
+                    <td>{{ voter.gender }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Guardian:</td>
+                    <td>{{ voter.guardian_name }} ({{ voter.guardian_relation }})</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Mobile Phone:</td>
+                    <td>{{ voter.mobile or 'Not registered' }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">SIR Cycle:</td>
+                    <td>{{ voter.cycle_name }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Residential & Polling Station Card -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>🏫 Constituency &amp; Booth Assignment</h3>
+        </div>
+        <div class="card-body">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 40%; font-weight: 600; color: var(--text-secondary);">Constituency:</td>
+                    <td><strong>{{ voter.constituency_name }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">District / State:</td>
+                    <td>{{ voter.district }}, {{ voter.state }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Polling Booth:</td>
+                    <td>Booth #{{ voter.booth_number }}: {{ voter.booth_name }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Booth Capacity:</td>
+                    <td>Limit: <strong>{{ voter.max_capacity }} voters</strong></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Household No:</td>
+                    <td>{{ voter.household_number }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Physical Address:</td>
+                    <td>{{ voter.address_line }} (PIN: {{ voter.pincode }})</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-secondary);">Application Date:</td>
+                    <td>{{ voter.created_at }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Officer Status Transition Panel (Member 2 & 3 Workflow) -->
+<div class="card">
+    <div class="card-header">
+        <h3>⚖️ Administrative Status Transition (Officer Action)</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('review') }}">
+            <input type="hidden" name="voter_id" value="{{ voter.voter_id }}">
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr 2fr auto; align-items: flex-end;">
+                <div class="form-group">
+                    <label for="new_status">Transition Status To *</label>
+                    <select id="new_status" name="new_status" required>
+                        <option value="">-- Select New Status --</option>
+                        <option value="Approved">Approved (Final Electoral Roll)</option>
+                        <option value="Verified">Verified (BLO Field Complete)</option>
+                        <option value="Pending_Verification">Pending Verification</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Deleted">Deleted</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="officer_id">Authorized Officer *</label>
+                    <select id="officer_id" name="officer_id" required>
+                        <option value="">-- Authorized Officer --</option>
+                        {% for o in officers %}
+                            <option value="{{ o.officer_id }}">{{ o.name }} ({{ o.designation }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="remarks">Official Verification Remarks *</label>
+                    <input type="text" id="remarks" name="remarks" required placeholder="e.g. Field verification completed; documents verified.">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" style="height: 40px;">Execute Transition</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- StatusHistory Audit Trail -->
+<div class="card">
+    <div class="card-header">
+        <h3>📜 Statutory StatusHistory Audit Trail</h3>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Previous Status</th>
+                    <th>New Status</th>
+                    <th>Timestamp</th>
+                    <th>Authorized Officer</th>
+                    <th>Official Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if history %}
+                    {% for h in history %}
+                    <tr>
+                        <td>#{{ h.history_id }}</td>
+                        <td>
+                            {% if h.previous_status %}
+                                <span class="badge badge-deleted">{{ h.previous_status }}</span>
+                            {% else %}
+                                <em>Initial Record</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if h.new_status == 'Approved' %}
+                                <span class="badge badge-approved">Approved</span>
+                            {% elif h.new_status == 'Verified' %}
+                                <span class="badge badge-verified">Verified</span>
+                            {% elif h.new_status == 'Pending_Verification' %}
+                                <span class="badge badge-pending">Pending Verif</span>
+                            {% elif h.new_status == 'Submitted' %}
+                                <span class="badge badge-submitted">Submitted</span>
+                            {% elif h.new_status == 'Rejected' %}
+                                <span class="badge badge-rejected">Rejected</span>
+                            {% elif h.new_status == 'Under_Appeal' %}
+                                <span class="badge badge-appeal">Under Appeal</span>
+                            {% else %}
+                                <span class="badge badge-deleted">{{ h.new_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ h.change_date }}</td>
+                        <td>{{ h.officer_name or 'System Process' }} ({{ h.officer_designation or 'Auto' }})</td>
+                        <td>{{ h.remarks or 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted);">No history transitions recorded yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

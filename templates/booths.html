@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Polling Booths &amp; Capacity Limits — SIR Electoral Roll System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🏫 Polling Station Capacity &amp; 1,200 Voter Limit Monitoring</h1>
+        <p>Statutory rule: Each Polling Station is limited to a maximum of <strong>1,200 active voters</strong> to prevent congestion on poll day.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>📍 Polling Booth Allocation Status</h3>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Booth #</th>
+                    <th>Station Name</th>
+                    <th>Constituency</th>
+                    <th>Location</th>
+                    <th>Capacity Bar</th>
+                    <th>Enrolled / Limit</th>
+                    <th>Remaining Slots</th>
+                    <th>Statutory Compliance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in booths %}
+                {% set pct = (b.enrolled_voters / b.max_capacity * 100) | round | int %}
+                <tr>
+                    <td><strong>Booth #{{ b.booth_number }}</strong></td>
+                    <td><strong>{{ b.booth_name }}</strong></td>
+                    <td>{{ b.constituency_name }} ({{ b.constituency_code }})</td>
+                    <td>{{ b.location }}</td>
+                    <td style="min-width: 140px;">
+                        <div style="background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden;">
+                            <div style="background: {% if pct >= 100 %}var(--danger){% elif pct >= 80 %}var(--warning){% else %}var(--primary){% endif %}; width: {{ [pct, 100] | min }}%; height: 100%;"></div>
+                        </div>
+                        <small style="color: var(--text-muted);">{{ pct }}% allocated</small>
+                    </td>
+                    <td><strong>{{ b.enrolled_voters }}</strong> / {{ b.max_capacity }}</td>
+                    <td>
+                        {% if b.slots_remaining <= 0 %}
+                            <span style="color: var(--danger); font-weight: 700;">0 (Full)</span>
+                        {% else %}
+                            <span style="color: var(--success); font-weight: 600;">{{ b.slots_remaining }} available</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.enrolled_voters >= b.max_capacity %}
+                            <span class="badge badge-rejected">CAPACITY REACHED</span>
+                        {% elif pct >= 85 %}
+                            <span class="badge badge-pending">NEARING LIMIT</span>
+                        {% else %}
+                            <span class="badge badge-approved">OPTIMAL</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — SIR Electoral Roll System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🏛️ SIR Electoral Roll Management Dashboard</h1>
+        <p>Active Cycle: <strong>{{ active_cycle.cycle_name if active_cycle else "SIR 2026 Special Revision" }}</strong> (Qualifying Date: <code>{{ active_cycle.qualifying_date if active_cycle else "2026-01-01" }}</code>)</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ url_for('register') }}" class="btn btn-primary">+ Register Voter</a>
+        <a href="{{ url_for('review') }}" class="btn btn-secondary">Review Pending</a>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-label">Total Applications</div>
+        <div class="stat-value">{{ stats.total_voters }}</div>
+        <div class="stat-desc">All registered voters in registry</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-label">Approved &amp; Eligible</div>
+        <div class="stat-value">{{ stats.approved_voters }}</div>
+        <div class="stat-desc">Verified 18+ on qualifying date</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-label">Pending Verification</div>
+        <div class="stat-value">{{ stats.pending_voters }}</div>
+        <div class="stat-desc">Awaiting BLO field verification</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="stat-label">Rejected / Deleted</div>
+        <div class="stat-value">{{ stats.rejected_voters }}</div>
+        <div class="stat-desc">15-day appeal window eligible</div>
+    </div>
+    <div class="stat-card purple">
+        <div class="stat-label">Active Booths</div>
+        <div class="stat-value">{{ stats.total_booths }}</div>
+        <div class="stat-desc">Max 1,200 voters per booth</div>
+    </div>
+</div>
+
+<!-- Dual Section: Recent Registrations and Booth Capacities -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <!-- Recent Applications Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3>📑 Recent Voter Records</h3>
+            <a href="{{ url_for('search') }}" class="btn btn-secondary btn-sm">View All &rarr;</a>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>EPIC Number</th>
+                        <th>Applicant Name</th>
+                        <th>DOB / Age</th>
+                        <th>Polling Booth</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in recent_voters %}
+                    <tr>
+                        <td><strong>{{ v.epic_number }}</strong></td>
+                        <td>{{ v.first_name }} {{ v.last_name }}</td>
+                        <td>{{ v.dob }}</td>
+                        <td>Booth #{{ v.booth_number }} ({{ v.booth_name[:22] }}...)</td>
+                        <td>
+                            {% if v.status == 'Approved' %}
+                                <span class="badge badge-approved">Approved</span>
+                            {% elif v.status == 'Verified' %}
+                                <span class="badge badge-verified">Verified</span>
+                            {% elif v.status == 'Pending_Verification' %}
+                                <span class="badge badge-pending">Pending Verif</span>
+                            {% elif v.status == 'Submitted' %}
+                                <span class="badge badge-submitted">Submitted</span>
+                            {% elif v.status == 'Rejected' %}
+                                <span class="badge badge-rejected">Rejected</span>
+                            {% elif v.status == 'Under_Appeal' %}
+                                <span class="badge badge-appeal">Under Appeal</span>
+                            {% else %}
+                                <span class="badge badge-deleted">{{ v.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('voter_detail', voter_id=v.voter_id) }}" class="btn btn-secondary btn-sm">Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Polling Booth Limit Monitor Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3>🏫 Booth Enrollment</h3>
+            <a href="{{ url_for('booths') }}" class="btn btn-secondary btn-sm">Inspect</a>
+        </div>
+        <div class="card-body" style="padding: 1rem;">
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Statutory limit: <strong>1,200 voters per booth</strong>.
+            </p>
+            {% for b in booths %}
+            <div style="margin-bottom: 1.1rem; padding-bottom: 0.8rem; border-bottom: 1px dashed var(--card-border);">
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.25rem;">
+                    <strong>Booth #{{ b.booth_number }}: {{ b.booth_name[:25] }}</strong>
+                    <span>{{ b.enrolled_voters }} / {{ b.max_capacity }}</span>
+                </div>
+                {% set pct = (b.enrolled_voters / b.max_capacity * 100) | round | int %}
+                <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="background: {% if pct >= 100 %}var(--danger){% elif pct >= 80 %}var(--warning){% else %}var(--primary){% endif %}; width: {{ [pct, 100] | min }}%; height: 100%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                    <span>{{ b.constituency_code }}</span>
+                    <span>{% if pct >= 100 %}<strong style="color: var(--danger);">LIMIT REACHED</strong>{% else %}{{ b.slots_remaining }} slots left{% endif %}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

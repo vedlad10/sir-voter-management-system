@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Rules Sandbox &amp; Verification — SIR System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🧪 Member 3: SIR Business Logic &amp; DBMS Algorithm Sandbox</h1>
+        <p>Live interactive testbed demonstrating each statutory rule with both <strong>passing</strong> and <strong>failing validations</strong>.</p>
+    </div>
+</div>
+
+<!-- Grid of Interactive Test Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+
+    <!-- Card 1: 18-Year Age Check -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>1️⃣ 18-Year Eligibility Check</h3>
+        </div>
+        <div class="card-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Evaluates applicant age against SIR Qualifying Date (<strong>2026-01-01</strong>). Age must be &ge; 18 years.
+            </p>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <button type="button" class="btn btn-success btn-sm" onclick="testRuleAge('2004-05-14', 1, 'age_out')">
+                    ▶ Test Valid (DOB 2004-05-14 / Age 21)
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="testRuleAge('2008-05-14', 1, 'age_out')">
+                    ▶ Test Fail (DOB 2008-05-14 / Age 17)
+                </button>
+            </div>
+            <div id="age_out" style="min-height: 48px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Click a test case above to run validation...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Duplicate Detection -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>2️⃣ Exact Duplicate Detection</h3>
+        </div>
+        <div class="card-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Compares normalized <code>(First Name, Last Name, DOB, Guardian Name)</code> against existing electoral roll.
+            </p>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <button type="button" class="btn btn-success btn-sm" onclick="testRuleDuplicate('Vikram', 'Bansal', '1995-10-12', 'Arjun Bansal', 'dup_out')">
+                    ▶ Test Unique (New Citizen)
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="testRuleDuplicate('Aarav', 'Sharma', '2004-05-14', 'Sunita Sharma', 'dup_out')">
+                    ▶ Test Fail (Duplicate of Aarav)
+                </button>
+            </div>
+            <div id="dup_out" style="min-height: 48px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Click a test case above to query index...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: 1,200 Booth Capacity Limit -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>3️⃣ 1,200 Polling Booth Limit</h3>
+        </div>
+        <div class="card-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Prevents assigning voters to a polling station once its statutory maximum enrollment is reached.
+            </p>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <button type="button" class="btn btn-success btn-sm" onclick="testRuleBooth(1, 'booth_out')">
+                    ▶ Test Booth #1 (Capacity Open)
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="testRuleBooth(3, 'booth_out')">
+                    ▶ Test Booth #3 (Max Capacity Full)
+                </button>
+            </div>
+            <div id="booth_out" style="min-height: 48px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Click a test case above to query booth enrollment...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: 15-Day Appeal Window -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>4️⃣ 15-Day Appeal Window</h3>
+        </div>
+        <div class="card-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Ensures appeals against rejection notices are submitted within &le; 15 statutory calendar days.
+            </p>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <button type="button" class="btn btn-success btn-sm" onclick="testRuleAppeal('2026-01-05', '2026-01-12', 'appeal_out')">
+                    ▶ Test Valid (7 Days Elapsed)
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="testRuleAppeal('2026-01-05', '2026-01-28', 'appeal_out')">
+                    ▶ Test Fail (23 Days Elapsed)
+                </button>
+            </div>
+            <div id="appeal_out" style="min-height: 48px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Click a test case above to validate window...</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Architecture & Enforcement Distribution Table -->
+<div class="card">
+    <div class="card-header">
+        <h3>🏛️ Rule Placement Strategy: Python Application Layer vs MySQL DBMS Constraints</h3>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rule / Requirement</th>
+                    <th>Enforced Layer</th>
+                    <th>Mechanism &amp; Implementation</th>
+                    <th>Technical Rationale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Referential Integrity</strong></td>
+                    <td><span class="badge badge-verified">MySQL DBMS</span></td>
+                    <td>Foreign Keys: <code>ON DELETE RESTRICT / CASCADE</code></td>
+                    <td>Guarantees relational consistency across sessions regardless of client.</td>
+                </tr>
+                <tr>
+                    <td><strong>Entity Uniqueness (EPIC, Codes)</strong></td>
+                    <td><span class="badge badge-verified">MySQL DBMS</span></td>
+                    <td>Unique Constraints &amp; B-Tree Indexes (<code>UNIQUE(epic_number)</code>)</td>
+                    <td>Database-level atomic prevention of race conditions during concurrent inserts.</td>
+                </tr>
+                <tr>
+                    <td><strong>Audit Trail Logging</strong></td>
+                    <td><span class="badge badge-approved">Hybrid: MySQL Trigger + Python</span></td>
+                    <td><code>trg_voter_status_update</code> + <code>StatusHistory</code> inserts</td>
+                    <td>Trigger guarantees immutable audit log on direct SQL updates; Python captures officer remarks.</td>
+                </tr>
+                <tr>
+                    <td><strong>18-Year Age Eligibility</strong></td>
+                    <td><span class="badge badge-appeal">Python Application</span></td>
+                    <td>Dynamic lookup of active <code>qualifying_date</code> in <code>calculate_age_on_date</code></td>
+                    <td>Allows varying qualifying dates across different election cycles without schema alteration.</td>
+                </tr>
+                <tr>
+                    <td><strong>Exact-Match Duplicate Detection</strong></td>
+                    <td><span class="badge badge-appeal">Python Application</span></td>
+                    <td>Normalized multi-column lookup + <code>DuplicateAudit</code> logging</td>
+                    <td>Enables custom case-insensitive trimming, phonetic pre-matching, and audit tracking.</td>
+                </tr>
+                <tr>
+                    <td><strong>1,200 Booth Capacity Limit</strong></td>
+                    <td><span class="badge badge-appeal">Python Application</span></td>
+                    <td>Transactional <code>COUNT(*)</code> check before booth assignment</td>
+                    <td>Provides dynamic re-routing of voters to auxiliary polling stations and friendly UI feedback.</td>
+                </tr>
+                <tr>
+                    <td><strong>15-Day Appeal Window</strong></td>
+                    <td><span class="badge badge-appeal">Python Application</span></td>
+                    <td>Statutory date difference comparison against rejection notice</td>
+                    <td>Delivers granular error messaging explaining exact elapsed days vs statutory threshold.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

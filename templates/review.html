@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Officer Review — SIR Electoral Roll System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>⚖️ Officer Verification &amp; Status Review Dashboard</h1>
+        <p>Review submitted applications, conduct field checks, and transition voter statuses.</p>
+    </div>
+</div>
+
+<!-- Pending Applications Queue Card -->
+<div class="card">
+    <div class="card-header">
+        <h3>⏳ Applications Awaiting Verification / Approval ({{ pending_list | length }} pending)</h3>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Application / EPIC</th>
+                    <th>Applicant Name</th>
+                    <th>DOB</th>
+                    <th>Guardian</th>
+                    <th>Booth Location</th>
+                    <th>Current Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if pending_list %}
+                    {% for v in pending_list %}
+                    <tr>
+                        <td><strong>{{ v.epic_number }}</strong></td>
+                        <td>{{ v.first_name }} {{ v.last_name }}</td>
+                        <td>{{ v.dob }}</td>
+                        <td>{{ v.guardian_name }}</td>
+                        <td>Booth #{{ v.booth_number }}: {{ v.booth_name }}</td>
+                        <td>
+                            {% if v.status == 'Pending_Verification' %}
+                                <span class="badge badge-pending">Pending Verif</span>
+                            {% else %}
+                                <span class="badge badge-submitted">Submitted</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- Modal-less inline action buttons -->
+                            <div style="display: flex; gap: 0.35rem;">
+                                <a href="{{ url_for('voter_detail', voter_id=v.voter_id) }}" class="btn btn-secondary btn-sm">Review</a>
+                                
+                                <form method="POST" action="{{ url_for('review') }}" style="display: inline;">
+                                    <input type="hidden" name="voter_id" value="{{ v.voter_id }}">
+                                    <input type="hidden" name="new_status" value="Approved">
+                                    <input type="hidden" name="officer_id" value="{{ officers[0].officer_id if officers else 1 }}">
+                                    <input type="hidden" name="remarks" value="Direct approval by Electoral Officer">
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+
+                                <form method="POST" action="{{ url_for('review') }}" style="display: inline;">
+                                    <input type="hidden" name="voter_id" value="{{ v.voter_id }}">
+                                    <input type="hidden" name="new_status" value="Rejected">
+                                    <input type="hidden" name="officer_id" value="{{ officers[0].officer_id if officers else 1 }}">
+                                    <input type="hidden" name="remarks" value="Rejection due to incomplete field documentation">
+                                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                            ✓ All applications have been reviewed! No pending verification tasks.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- System Status Transitions Log -->
+<div class="card">
+    <div class="card-header">
+        <h3>📜 Live Transition Activity Feed (StatusHistory)</h3>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Log #</th>
+                    <th>Voter</th>
+                    <th>Transition</th>
+                    <th>Timestamp</th>
+                    <th>Officer</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in recent_history %}
+                <tr>
+                    <td>#{{ h.history_id }}</td>
+                    <td><strong>{{ h.voter_name }}</strong> ({{ h.epic_number }})</td>
+                    <td>
+                        <span class="badge badge-deleted">{{ h.previous_status or 'Init' }}</span>
+                        &rarr;
+                        <span class="badge badge-approved">{{ h.new_status }}</span>
+                    </td>
+                    <td>{{ h.change_date }}</td>
+                    <td>{{ h.officer_name or 'System Engine' }} ({{ h.officer_designation or 'Auto' }})</td>
+                    <td>{{ h.remarks or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

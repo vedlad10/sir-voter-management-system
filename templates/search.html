@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Voter Search — SIR Electoral Roll System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🔍 Voter Roll Search &amp; Verification</h1>
+        <p>Query electoral records using Name, EPIC Number, Polling Booth, or Enrollment Status.</p>
+    </div>
+    <a href="{{ url_for('register') }}" class="btn btn-primary">+ Register New Voter</a>
+</div>
+
+<!-- Search Filter Form -->
+<div class="card">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('search') }}">
+            <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr auto; align-items: flex-end;">
+                <div class="form-group">
+                    <label for="q">Search Name or EPIC Number</label>
+                    <input type="text" id="q" name="q" value="{{ query_str }}" placeholder="e.g. Aarav, IND9823101, Baker Street...">
+                </div>
+                <div class="form-group">
+                    <label for="booth_id">Polling Booth</label>
+                    <select id="booth_id" name="booth_id">
+                        <option value="">-- All Booths --</option>
+                        {% for b in booths %}
+                            <option value="{{ b.booth_id }}" {% if selected_booth == b.booth_id %}selected{% endif %}>
+                                Booth #{{ b.booth_number }}: {{ b.booth_name[:24] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status">Electoral Status</label>
+                    <select id="status" name="status">
+                        <option value="">-- All Statuses --</option>
+                        <option value="Approved" {% if selected_status == 'Approved' %}selected{% endif %}>Approved (Eligible)</option>
+                        <option value="Verified" {% if selected_status == 'Verified' %}selected{% endif %}>Verified</option>
+                        <option value="Pending_Verification" {% if selected_status == 'Pending_Verification' %}selected{% endif %}>Pending Verification</option>
+                        <option value="Submitted" {% if selected_status == 'Submitted' %}selected{% endif %}>Submitted</option>
+                        <option value="Rejected" {% if selected_status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="Under_Appeal" {% if selected_status == 'Under_Appeal' %}selected{% endif %}>Under Appeal</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="constituency_id">Constituency</label>
+                    <select id="constituency_id" name="constituency_id">
+                        <option value="">-- All Constituencies --</option>
+                        {% for c in constituencies %}
+                            <option value="{{ c.constituency_id }}" {% if selected_constituency == c.constituency_id %}selected{% endif %}>
+                                {{ c.constituency_code }} - {{ c.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" style="height: 40px; width: 100%;">Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Table -->
+<div class="card">
+    <div class="card-header">
+        <h3>📋 Search Results ({{ results | length }} records matched)</h3>
+        {% if query_str or selected_status or selected_booth %}
+            <a href="{{ url_for('search') }}" class="btn btn-secondary btn-sm">Clear Filters</a>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>EPIC Number</th>
+                    <th>Full Name</th>
+                    <th>Date of Birth</th>
+                    <th>Guardian Details</th>
+                    <th>Constituency &amp; Booth</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if results %}
+                    {% for v in results %}
+                    <tr>
+                        <td><strong style="color: var(--primary);">{{ v.epic_number }}</strong></td>
+                        <td><strong>{{ v.first_name }} {{ v.last_name }}</strong><br><small style="color: var(--text-muted);">{{ v.gender }} &bull; {{ v.mobile or 'No phone' }}</small></td>
+                        <td>{{ v.dob }}</td>
+                        <td>{{ v.guardian_name }} ({{ v.guardian_relation }})</td>
+                        <td>
+                            {{ v.constituency_name }}<br>
+                            <small style="color: var(--text-secondary);">Booth #{{ v.booth_number }}: {{ v.booth_name }}</small>
+                        </td>
+                        <td>
+                            {% if v.status == 'Approved' %}
+                                <span class="badge badge-approved">Approved</span>
+                            {% elif v.status == 'Verified' %}
+                                <span class="badge badge-verified">Verified</span>
+                            {% elif v.status == 'Pending_Verification' %}
+                                <span class="badge badge-pending">Pending Verif</span>
+                            {% elif v.status == 'Submitted' %}
+                                <span class="badge badge-submitted">Submitted</span>
+                            {% elif v.status == 'Rejected' %}
+                                <span class="badge badge-rejected">Rejected</span>
+                            {% elif v.status == 'Under_Appeal' %}
+                                <span class="badge badge-appeal">Under Appeal</span>
+                            {% else %}
+                                <span class="badge badge-deleted">{{ v.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('voter_detail', voter_id=v.voter_id) }}" class="btn btn-secondary btn-sm">Inspect</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                            No voter records matched your search parameters.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

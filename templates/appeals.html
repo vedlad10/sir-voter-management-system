@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Appeals &amp; 15-Day Window Compliance — SIR System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>📜 Statutory Appeals &amp; 15-Day Window Validation</h1>
+        <p>Rule: Aggrieved citizens whose applications were rejected or deleted may file an appeal within <strong>15 calendar days</strong> of the decision date.</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Appeal Filing Form -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>✍️ Lodge Statutory Appeal</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('appeals') }}">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="voter_id">Rejected / Deleted Voter *</label>
+                    <select id="voter_id" name="voter_id" required>
+                        <option value="">-- Select Rejected Applicant --</option>
+                        {% for rv in rejected_voters %}
+                            <option value="{{ rv.voter_id }}">
+                                {{ rv.first_name }} {{ rv.last_name }} ({{ rv.epic_number }} - {{ rv.status }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="rejection_date">Notice / Rejection Date *</label>
+                    <input type="date" id="rejection_date" name="rejection_date" value="2026-01-05" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="appeal_date">Filing Date * (Must be &le; Notice + 15 Days)</label>
+                    <input type="date" id="appeal_date" name="appeal_date" value="{{ today_date }}" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="reason">Grounds for Appeal *</label>
+                    <textarea id="reason" name="reason" rows="3" required placeholder="Explain why the rejection was improper..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Validate Window &amp; Submit Appeal &rarr;
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Appeals & Statutory Compliance Table -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+            <h3>📑 Registered Appeals &amp; Compliance Audit</h3>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Appeal #</th>
+                        <th>Voter</th>
+                        <th>Rejection Date</th>
+                        <th>Appeal Date</th>
+                        <th>Days Elapsed</th>
+                        <th>15-Day Compliance</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if appeals %}
+                        {% for a in appeals %}
+                        <tr>
+                            <td>#{{ a.appeal_id }}</td>
+                            <td><strong>{{ a.first_name }} {{ a.last_name }}</strong><br><small style="color: var(--text-muted);">{{ a.epic_number }}</small></td>
+                            <td>{{ a.rejection_date }}</td>
+                            <td>{{ a.appeal_date }}</td>
+                            <td>
+                                <!-- Calculate elapsed days in template display -->
+                                <strong style="color: var(--primary);">Valid Window</strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-approved">✓ WITHIN 15 DAYS</span>
+                            </td>
+                            <td>
+                                {% if a.status == 'Approved' %}
+                                    <span class="badge badge-approved">Approved</span>
+                                {% elif a.status == 'Dismissed' %}
+                                    <span class="badge badge-rejected">Dismissed</span>
+                                {% else %}
+                                    <span class="badge badge-pending">Under ERO Review</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No appeals currently lodged.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
