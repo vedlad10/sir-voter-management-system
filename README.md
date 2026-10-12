@@ -4,21 +4,21 @@ A production-grade Electoral Roll Management and Revision web application built 
 
 ---
 
-## 🏛️ Project Architecture & Team Ownership
+## Project Architecture & Team Ownership
 
-### 👤 Member 1 — Database & SQL Implementation
+###  Member 1 — Database & SQL Implementation
 - **Schema Design & Relationships**: MySQL relational schema modeling `Constituency`, `PollingBooth`, `Household`, `Voter`, `Officer`, `SIRCycle`, `StatusHistory`, `Appeal`, and `DuplicateAudit`.
 - **Integrity & Constraints**: Composite unique keys, foreign keys (`ON DELETE RESTRICT` / `CASCADE`), check constraints, and enumeration states (`PENDING`, `VERIFIED`, `APPROVED`, `REJECTED`, `FLAGGED_DUPLICATE`, `APPEAL_SUBMITTED`).
 - **Normalized Data Architecture**: Normalized from unnormalized registration logs to **3NF / BCNF**, isolating transitivity (e.g. booth capacity attributes and address lookups).
 - **Core SQL Queries**: Analytical queries in [`queries.sql`](./queries.sql) for voter lookups, pending verification queues, qualifying-date age calculations, and booth ceiling audits.
 
-### 👤 Member 2 — Flask Backend & Connectivity
+### Member 2 — Flask Backend & Member
 - **Python Application Layer**: Structured Flask application ([`app.py`](./app.py)) with context processors and modular data services ([`models.py`](./models.py)).
 - **Database Connection Manager**: High-reliability `DatabaseManager` in [`database.py`](./database.py) using `mysql-connector-python` with connection pooling, dictionary cursors, and an automatic SQLite fallback for offline demonstrations.
 - **Security & Parameterization**: 100% parameterized SQL execution eliminating SQL injection vulnerabilities.
 - **Transaction Safety**: Context-managed atomic units of work (`execute_transaction`) with automatic commit and rollback on failure.
 
-### 👤 Member 3 — Business Logic & DBMS Algorithms
+###  Member 3 — Business Logic & DBMS Algorithms
 - **Statutory SIR Rules Engine**: Implemented in [`rules.py`](./rules.py):
   1. **Exact-Match Duplicate Detection**: Composite matching on `(normalized_name, dob, normalized_guardian)`.
   2. **18-Year Age Qualification**: Exact age determination evaluated strictly on the SIR cycle's `qualifying_date`.
@@ -27,7 +27,7 @@ A production-grade Electoral Roll Management and Revision web application built 
   5. **Status Audit Logging**: Complete chronological transition history stored in `StatusHistory`.
 - **Enforcement Partitioning Strategy**: Clear architectural demarcation between DBMS constraints/triggers vs. application-layer rules.
 
-### 👤 Member 4 — Prototype Integration & Testing
+### Member 4 — Prototype Integration & Testing
 - **Unified Web Interface**: Responsive interface styled with modern glassmorphism design tokens in [`static/css/style.css`](./static/css/style.css).
 - **Interactive Pages**:
   - **Dashboard**: High-level metrics, SIR cycle status, and recent activity.
@@ -42,7 +42,7 @@ A production-grade Electoral Roll Management and Revision web application built 
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### 1. Prerequisites
 - Python 3.10+
@@ -62,8 +62,7 @@ pip install -r requirements.txt
 ```bash
 python app.py
 ```
-Open your browser and navigate to:
-👉 **`http://127.0.0.1:5000`**
+Open your browser and naviganavigatto*`http://127.0.0.1:5000`**
 
 ### 4. Running the CLI Verification & Demos
 ```bash
@@ -76,7 +75,7 @@ python -m unittest test_system.py -v
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 sir-voter-management-system/
@@ -109,5 +108,5 @@ sir-voter-management-system/
 
 ---
 
-## 🛡️ License
+##  License
 Academic / Coursework Project Submission.
